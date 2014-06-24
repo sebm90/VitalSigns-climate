@@ -1,5 +1,5 @@
 var series = [];
-var sensors = [];
+var sensors = {};
 var datesIncluded = {};
 var averageTemps = {};
 
@@ -29,6 +29,9 @@ var options = {
 $.get('data/climate data/CLM-Data_Entry-v3/Data-Table-all-sensors.csv', function(data) {
 
     var lines = data.split('\n');
+
+    var sensorIndex = 0;
+
     $.each(lines, function(lineNo, line) {
         var items = line.split(',');
 
@@ -36,38 +39,54 @@ $.get('data/climate data/CLM-Data_Entry-v3/Data-Table-all-sensors.csv', function
 
             if(!sensors[items[0]]) {
                 datesIncluded[items[0]] = [];
-                sensors[items[0]] = [];
- }
+                var thisSensorObject = {};
+                thisSensorObject.name = items[0];
+                thisSensorObject.data = [];
+                thisSensorObject.readings = {};
+                series.push(thisSensorObject);
+                sensors[items[0]] = items[0];
+                sensorIndex++;
+                console.log(sensorIndex);
+ 			}
 
-console.log(sensors);
+           var found = $.inArray(items[1], datesIncluded[items[0]]);
 
-            var found = $.inArray(items[1], datesIncluded[items[0]]);
-                if(found == -1) {
-                    datesIncluded[items[0]].push(items[1]);
-                    sensors[items[0]].push(parseFloat(items[6]));
-                } else {
-                    sensors[items[0]] += parseFloat(items[6]);
-                }
 
+
+var currentSensor = parseFloat(sensorIndex - 1);
+
+//console.log(datesIncluded[items[0]]);
+
+           if(found == -1) {
+           	if(items[2] == 8) { //August
+				datesIncluded[items[0]].push(items[1]);
+               series[currentSensor].data.push(parseFloat(items[6]));
+               series[currentSensor].readings[items[1]] = [];
+               series[currentSensor].readings[items[1]].push(items[4]);
+           	}
+           } else {
+           	if(items[2] == 8) { //August
+           	var currentDate = series[currentSensor].data.length - 1;
+               series[currentSensor].data[currentDate] += parseFloat(items[6]);
+               series[currentSensor].readings[items[1]].push(items[4]);
+               }
+           }
 
         }
     });
 
-    console.log(sensors);
-
-	$.each(averageTemps, function(dayNo, value) {
-		averageTemps[dayNo] = value/12;
-		averageTemps[dayNo] = parseFloat(averageTemps[dayNo].toFixed(2));
+$.each(series, function(index, value) {
+	$.each(series[index].data, function(i, v) {
+		var numberOfReadings = series[index].readings[i+1].length;
+		//console.log(numberOfReadings);
+		series[index].data[i] = v/numberOfReadings;
 	});
+});
 
-	var averageTempsArray = $.map(averageTemps, function(value, index) {
-    	return [value];
-	});
+console.log(datesIncluded);
 
 	options.xAxis.categories = datesIncluded;
-	options.series = [{ data: averageTempsArray,
-						name: 'Serial # 5500000016036E41'
-					}];
+	options.series = series;
 
     var chart = new Highcharts.Chart(options);
 });
