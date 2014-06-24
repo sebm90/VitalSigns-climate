@@ -29,14 +29,12 @@ var options = {
 $.get('data/climate data/CLM-Data_Entry-v3/Data-Table-all-sensors.csv', function(data) {
 
     var lines = data.split('\n');
-
     var sensorIndex = 0;
 
     $.each(lines, function(lineNo, line) {
         var items = line.split(',');
 
         if (lineNo > 0) {
-
             if(!sensors[items[0]]) {
                 datesIncluded[items[0]] = [];
                 var thisSensorObject = {};
@@ -49,41 +47,35 @@ $.get('data/climate data/CLM-Data_Entry-v3/Data-Table-all-sensors.csv', function
                 console.log(sensorIndex);
  			}
 
-           var found = $.inArray(items[1], datesIncluded[items[0]]);
+			var currentSensor = parseFloat(sensorIndex - 1);
+			var found = $.inArray(items[1], datesIncluded[items[0]]);
 
-
-
-var currentSensor = parseFloat(sensorIndex - 1);
-
-//console.log(datesIncluded[items[0]]);
-
-           if(found == -1) {
-           	if(items[2] == 8) { //August
-				datesIncluded[items[0]].push(items[1]);
-               series[currentSensor].data.push(parseFloat(items[6]));
-               series[currentSensor].readings[items[1]] = [];
-               series[currentSensor].readings[items[1]].push(items[4]);
-           	}
-           } else {
-           	if(items[2] == 8) { //August
-           	var currentDate = series[currentSensor].data.length - 1;
-               series[currentSensor].data[currentDate] += parseFloat(items[6]);
-               series[currentSensor].readings[items[1]].push(items[4]);
-               }
-           }
-
+			if(found == -1) {
+				if(items[2] == 8) { //August
+					datesIncluded[items[0]].push(items[1]);
+					series[currentSensor].data.push(parseFloat(items[6]));
+					series[currentSensor].readings[items[1]] = [];
+					series[currentSensor].readings[items[1]].push(items[4]);
+				}
+			} else {
+				if(items[2] == 8) { //August
+					var currentDate = series[currentSensor].data.length - 1;
+					series[currentSensor].data[currentDate] += parseFloat(items[6]);
+					series[currentSensor].readings[items[1]].push(items[4]);
+				}
+			}
         }
     });
 
-$.each(series, function(index, value) {
-	$.each(series[index].data, function(i, v) {
-		var numberOfReadings = series[index].readings[i+1].length;
-		//console.log(numberOfReadings);
-		series[index].data[i] = v/numberOfReadings;
+	$.each(series, function(index, value) {
+		$.each(series[index].data, function(i, v) {
+			var numberOfReadings = series[index].readings[i+1].length;
+			//console.log(numberOfReadings);
+			series[index].data[i] = v/numberOfReadings;
+		});
 	});
-});
 
-console.log(datesIncluded);
+	console.log(series);
 
 	options.xAxis.categories = datesIncluded;
 	options.series = series;
