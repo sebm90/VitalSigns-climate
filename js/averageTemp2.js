@@ -51,15 +51,13 @@ $.get('data/climate data/CLM-Data_Entry-v3/Data-Table-all-sensors.csv', function
 			var currentSensor = parseFloat(sensorIndex - 1);
 			var found = $.inArray(items[1], datesIncluded[items[0]]);
 
-			if(found == -1) {
-				if(items[2] == 8) { //August
+			if(items[2] == 8) {
+				if(found == -1) {
 					datesIncluded[items[0]].push(items[1]);
 					series[currentSensor].data.push(parseFloat(items[6]));
 					series[currentSensor].readings[items[1]] = [];
 					series[currentSensor].readings[items[1]].push(items[4]);
-				}
-			} else {
-				if(items[2] == 8) { //August
+				} else {
 					var currentDate = series[currentSensor].data.length - 1;
 					series[currentSensor].data[currentDate] += parseFloat(items[6]);
 					series[currentSensor].readings[items[1]].push(items[4]);
