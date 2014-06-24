@@ -3,6 +3,8 @@ var sensors = {};
 var datesIncluded = {};
 var averageTemps = {};
 
+function range1(i){return i?range1(i-1).concat(i):[]} //create an array of integers
+
 var options = {
 	title: {
         text: 'Mean Temperature August 2010'
@@ -44,7 +46,6 @@ $.get('data/climate data/CLM-Data_Entry-v3/Data-Table-all-sensors.csv', function
                 series.push(thisSensorObject);
                 sensors[items[0]] = items[0];
                 sensorIndex++;
-                console.log(sensorIndex);
  			}
 
 			var currentSensor = parseFloat(sensorIndex - 1);
@@ -70,14 +71,14 @@ $.get('data/climate data/CLM-Data_Entry-v3/Data-Table-all-sensors.csv', function
 	$.each(series, function(index, value) {
 		$.each(series[index].data, function(i, v) {
 			var numberOfReadings = series[index].readings[i+1].length;
-			//console.log(numberOfReadings);
 			series[index].data[i] = v/numberOfReadings;
+			series[index].data[i] = parseFloat(series[index].data[i].toFixed(2));
 		});
 	});
 
 	console.log(series);
 
-	options.xAxis.categories = datesIncluded;
+	options.xAxis.categories = range1(31);
 	options.series = series;
 
     var chart = new Highcharts.Chart(options);
